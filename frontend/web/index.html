@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <base href="$FLUTTER_BASE_HREF">
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description"
+    content="Texas Hold'em Poker Hand Analyzer - Evaluate hands, calculate win probability, and compare poker hands.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Poker Analyzer">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <title>🃏 Poker Hand Analyzer</title>
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Preload the main JS bundle so the browser downloads it immediately -->
+  <link rel="preload" href="main.dart.js" as="script">
+  <link rel="preload" href="flutter_bootstrap.js" as="script">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    }
+
+    #loading-screen {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      animation: fadeIn 0.3s ease;
+      z-index: 9999;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .card-icon {
+      font-size: 80px;
+      animation: float 2.2s ease-in-out infinite;
+      filter: drop-shadow(0 8px 28px rgba(99, 102, 241, 0.7));
+    }
+
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(0px) rotate(-3deg);
+      }
+
+      50% {
+        transform: translateY(-14px) rotate(3deg);
+      }
+    }
+
+    .loading-title {
+      color: #fff;
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-shadow: 0 2px 16px rgba(99, 102, 241, 0.6);
+    }
+
+    .loading-bar-track {
+      width: 180px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .loading-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #6366f1, #a855f7);
+      border-radius: 4px;
+      animation: loadBar 4s ease-in-out forwards;
+    }
+
+    @keyframes loadBar {
+      0% {
+        width: 0%;
+      }
+
+      40% {
+        width: 60%;
+      }
+
+      80% {
+        width: 88%;
+      }
+
+      100% {
+        width: 95%;
+      }
+    }
+
+    .loading-subtitle {
+      color: rgba(255, 255, 255, 0.45);
+      font-size: 12px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="loading-screen">
+    <div class="card-icon">🃏</div>
+    <div class="loading-title">Poker Hand Analyzer</div>
+    <div class="loading-bar-track">
+      <div class="loading-bar-fill"></div>
+    </div>
+    <div class="loading-subtitle">Loading engine…</div>
+  </div>
+
+  <script>
+    // Point CanvasKit to Google's global CDN instead of downloading from our server.
+    // This is ~2x faster because:
+    //   1. Google's CDN has 200+ global edge nodes (low latency)
+    //   2. The file is likely already cached in the browser from other Flutter apps
+    window.flutterConfiguration = {
+      canvasKitBaseUrl: "https://www.gstatic.com/flutter-canvaskit/a18df97ca5/"
+    };
+  </script>
+
+  <script src="flutter_bootstrap.js" async></script>
+
+  <script>
+    // Fade out loading screen on first rendered frame
+    window.addEventListener('flutter-first-frame', function () {
+      var el = document.getElementById('loading-screen');
+      if (el) {
+        el.style.transition = 'opacity 0.35s ease';
+        el.style.opacity = '0';
+        setTimeout(function () { el.style.display = 'none'; }, 350);
+      }
+    });
+  </script>
+</body>
+
+</html>
