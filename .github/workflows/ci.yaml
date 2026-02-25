@@ -28,7 +28,6 @@ jobs:
         with:
           context: backend
           push: false
-          tags: gcr.io/${{ secrets.GCP_PROJECT }}/texas-backend:latest
           platforms: linux/amd64
   build-frontend:
     runs-on: ubuntu-latest
@@ -42,5 +41,4 @@ jobs:
         with:
           context: frontend
           push: false
-          tags: gcr.io/${{ secrets.GCP_PROJECT }}/texas-frontend:latest
           platforms: linux/amd64
