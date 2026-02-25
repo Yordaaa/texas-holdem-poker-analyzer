@@ -1,11 +1,9 @@
-# build stage — pin to Flutter 3.24.x which generates flutter_bootstrap.js
-FROM ghcr.io/cirruslabs/flutter:3.24.5 AS builder
+# build stage
+FROM ghcr.io/cirruslabs/flutter:latest AS builder
 WORKDIR /app
 COPY . .
 RUN flutter pub get
-# Note: --web-renderer html is deprecated in Flutter 3.24 and ignored.
-# CanvasKit is the only renderer. Speed is improved via CDN loading in index.html.
-RUN flutter build web --release --base-href /
+RUN flutter build web --release
 
 # serve with nginx
 FROM nginx:alpine

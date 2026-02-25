@@ -22,8 +22,8 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: gcr.io/texas-poker-app/texas-frontend:v6
-        imagePullPolicy: Always
+        image: gcr.io/texas-poker-app/texas-frontend:latest
+        imagePullPolicy: IfNotPresent
         ports:
         - name: http
           containerPort: 80

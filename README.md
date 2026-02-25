@@ -1,109 +1,114 @@
-# 🃏 Texas Hold'em Poker Analyzer
+# Texas Hold'em Poker Service
 
-A full-stack Texas Hold'em Poker Hand Analyzer deployed on **Google Kubernetes Engine (GKE)**.
+This repository contains a simple Texas Hold'em poker evaluation backend written in Go and a Flutter web frontend.
 
-**Live App:** http://34.59.185.221
+## Structure
+
+- `backend/` – Go service providing REST API for hand evaluation and probability
+- `frontend/` – Flutter web application (to be bootstrapped with `flutter create`)
+- `k8s/` – Kubernetes manifests for deployment on GKE
+- `k6/` – load test script using k6
+
+## Backend (Go)
+
+### Getting started
+
+```bash
+cd backend
+go mod tidy
+go test ./...  # run unit tests (includes spreadsheet loader)
+```
+
+A special test (`poker/spreadsheet_test.go`) opens the workbook
+`Texas HoldEm Hand comparison test cases.xlsx` using only the standard
+library. It logs every row from the first sheet so you can verify the
+cases programmatically or extend the test to assert specific values.
+
+
+### API endpoints
+
+- `POST /evaluate` – evaluate hole+board cards
+- `POST /compare` – compare two hands
+- `POST /probability` – Monte Carlo win probability
+
+Requests and responses use JSON (see `main.go` for structures).
+
+### Build and run
+
+```bash
+go build -o texas-backend ./
+./texas-backend   # listens on :8080
+```
+
+### Containerization
+
+A `Dockerfile` is provided; build with:
+
+```bash
+docker build -t texas-backend backend
+```
+
+## Frontend (Flutter web)
+
+Create the project with flutter:
+
+```bash
+cd frontend
+flutter create .
+flutter build web
+```
+
+Modify `lib/main.dart` to add UI for interacting with the backend (e.g. HTTP calls to `/evaluate`, `/probability`).
+
+Dockerize using a multi-stage build (build in `flutter` image and serve via nginx).
+
+## Kubernetes / GKE
+
+1. Install `gcloud`, `kubectl`, `k6`, and ensure `gcloud` is authenticated.
+2. Create a GKE cluster (AMD64 nodes):
+   ```bash
+   gcloud container clusters create texas-cluster \
+    --zone=us-central1-c --num-nodes=3 --machine-type=e2-medium
+   ```
+
+````
+3. Get credentials:
+   ```bash
+gcloud container clusters get-credentials texas-cluster --zone us-central1-c
+````
+
+4. Build and push images to Google Container Registry (GCR):
+   ```bash
+   gcloud builds submit --tag gcr.io/$PROJECT_ID/texas-backend:latest ./backend
+   ```
+
+# similarly for frontend
+
+````
+5. Apply manifests:
+   ```bash
+kubectl apply -f k8s/backend-deployment.yaml
+kubectl apply -f k8s/frontend-deployment.yaml
+````
+
+6. After services are provisioned, note the external IP of the frontend service and use it to access the web app.
+
+## Load Testing
+
+Run k6 script against backend or frontend URL:
+
+```bash
+k6 run k6/probability-test.js
+```
+
+## Testing on AMD64 GKE nodes
+
+GKE default nodes are amd64, which matches Go binary built without CGO.
+
+## CI/CD
+
+Add GitHub Actions workflow to build, test and push images whenever code is pushed to `main` branch. (Not yet included.)
 
 ---
 
-## Features
-
-- **Evaluate Hand** — Enter your hole cards + community cards and get the best hand (e.g. Royal Flush, Full House)
-- **Win Probability** — Monte Carlo simulation to calculate your win % against N opponents
-- **Compare Hands** — Head-to-head comparison of two players' hands on the same board
-
-## Tech Stack
-
-| Layer | Technology |
-|---|---|
-| Frontend | Flutter Web (CanvasKit renderer) |
-| Backend | Go (Gorilla Mux) |
-| Container | Docker (multi-stage build) |
-| Orchestration | Kubernetes (GKE) |
-| Registry | Google Container Registry (GCR) |
-| Serving | Nginx (Alpine) |
-
-## Project Structure
-
-```
-├── frontend/           # Flutter web app
-│   ├── lib/main.dart   # App source code
-│   ├── web/index.html  # Custom loading screen + CDN config
-│   ├── nginx.conf      # Nginx config with Flutter SPA routing
-│   └── Dockerfile      # Multi-stage: Flutter build → Nginx serve
-├── backend/            # Go REST API
-│   ├── main.go         # HTTP handlers (evaluate, compare, probability)
-│   ├── poker/          # Poker hand evaluation logic
-│   └── Dockerfile
-├── k8s/                # Kubernetes manifests
-│   ├── frontend-deployment.yaml
-│   └── backend-deployment.yaml
-└── deploy.py           # GCP deployment automation script
-```
-
-## API Endpoints
-
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/api/evaluate` | Evaluate best hand from hole + board cards |
-| POST | `/api/probability` | Monte Carlo win probability simulation |
-| POST | `/api/compare` | Compare two hands head-to-head |
-
-### Card Format
-Cards are encoded as `<suit><rank>` — e.g.:
-- `HA` = Ace of Hearts
-- `SK` = King of Spades
-- `DT` = Ten of Diamonds
-- `C9` = Nine of Clubs
-
-## Local Development
-
-### Backend
-```bash
-cd backend
-go run main.go
-# Runs on :8080
-```
-
-### Frontend
-```bash
-cd frontend
-flutter pub get
-flutter run -d chrome
-```
-
-## Docker Build
-
-```bash
-# Backend
-docker build -t texas-backend ./backend
-
-# Frontend
-docker build -t texas-frontend ./frontend
-```
-
-## Deployment (GKE)
-
-```bash
-# 1. Build & push images
-docker build -t gcr.io/<PROJECT_ID>/texas-frontend:v1 ./frontend
-docker push gcr.io/<PROJECT_ID>/texas-frontend:v1
-
-docker build -t gcr.io/<PROJECT_ID>/texas-backend:v1 ./backend
-docker push gcr.io/<PROJECT_ID>/texas-backend:v1
-
-# 2. Get cluster credentials
-gcloud container clusters get-credentials poker-cluster --zone us-central1-a
-
-# 3. Deploy
-kubectl apply -f k8s/backend-deployment.yaml
-kubectl apply -f k8s/frontend-deployment.yaml
-
-# 4. Check status
-kubectl rollout status deployment/texas-frontend
-kubectl get svc texas-frontend  # Get external IP
-```
-
-## License
-
-MIT
+Follow the step‑by‑step sections above to iteratively implement features, containerize, and deploy.
